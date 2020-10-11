@@ -1,0 +1,17 @@
+{
+    "name": "ShandyGeckoDI.UnitTests",
+    "references": [
+        "GUID:3ff5d3eadd1e846ad8626ee2360ae032"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
