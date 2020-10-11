@@ -1,15 +1,12 @@
-using System;
 using System.Collections.Generic;
 
 namespace ShandyGecko.ShandyGeckoDI.Context
 {
-	public abstract class Context : IDisposable
+	public abstract class BaseContext : IContext
 	{
-		private List<ContainerRegistry> _containerRegistries = new List<ContainerRegistry>();
+		private readonly List<ContainerRegistry> _containerRegistries = new List<ContainerRegistry>();
 
-		private Container _container;
-
-		public Container Container => _container;
+		public abstract Container Container { get; }
 
 		public ContainerRegistry RegisterProvider<T>(IObjectProvider provider)
 		{
@@ -23,35 +20,41 @@ namespace ShandyGecko.ShandyGeckoDI.Context
 			return value;
 		}
 
-		public void SetUp(Container container)
+		public ContainerRegistry RegisterInstance<T>(T obj)
 		{
-			_container = container;
-			
-			PreInstall();
-			Install();
-			PostInstall();
+			return RegisterProvider<T>(new InstanceProvider(obj));
 		}
 
 		public void Dispose()
 		{
 			foreach (var registry in _containerRegistries)
 			{
+				Container.RemoveContainerRegistry(registry);
 				registry.ObjectProvider.Dispose();
 			}
 		}
 
+		protected void SetUp()
+		{
+			PreInstall();
+			Install();
+			PostInstall();
+		}
+		
+		/// <summary>
+		/// Override to register types
+		/// </summary>
 		protected abstract void Install();
 
-		private void PreInstall()
+		protected virtual void PreInstall()
 		{
-			
 		}
 
 		private void PostInstall()
 		{
 			foreach (var containerValue in _containerRegistries)
 			{
-				_container.AddContainerRegistry(containerValue);
+				Container.AddContainerRegistry(containerValue);
 			}
 		}
 	}

@@ -1,12 +1,16 @@
-using System;
 using System.Collections.Generic;
 
 namespace ShandyGecko.ShandyGeckoDI
 {
-	public class Container : IDisposable
+	public class Container
 	{
 		private readonly Dictionary<ContainerKey, ContainerRegistry> _containerRegistries =
 			new Dictionary<ContainerKey, ContainerRegistry>();
+
+		public bool IsKeyRegistered(ContainerKey key)
+		{
+			return _containerRegistries.ContainsKey(key);
+		}
 
 		public void AddContainerRegistry(ContainerRegistry registry)
 		{
@@ -21,15 +25,24 @@ namespace ShandyGecko.ShandyGeckoDI
 			}
 		}
 
-		public void Dispose()
+		public void RemoveContainerRegistry(ContainerRegistry registry)
 		{
-			//TODO что если контейнер зареган?
-			foreach (var value in _containerRegistries.Values)
+			foreach (var key in registry.ContainerKeys)
 			{
-				value.ObjectProvider.Dispose();
+				if (!_containerRegistries.ContainsKey(key))
+				{
+					//TODO Error ?
+					continue;
+				}
+
+				_containerRegistries.Remove(key);
 			}
-			
-			_containerRegistries.Clear();
+		}
+
+		public T BuildUp<T>() where T : new()
+		{
+			var obj = new T();
+			return obj;
 		}
 	}
 }
