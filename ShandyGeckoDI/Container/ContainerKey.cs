@@ -8,10 +8,13 @@ namespace ShandyGecko.ShandyGeckoDI
 		
 		public Type Type { get; }
 		public string Name { get; private set; }
+		
+		public ContainerKey(Type type) : this(type, "") { }
 
-		public ContainerKey(Type type)
+		public ContainerKey(Type type, string name)
 		{
 			Type = type;
+			Name = name;
 		}
 
 		public void SetName(string name)

@@ -1,4 +1,4 @@
-namespace ShandyGecko.ShandyGeckoDI.Context
+namespace ShandyGecko.ShandyGeckoDI
 {
 	public abstract class ObjectContext : BaseContext
 	{

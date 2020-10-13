@@ -7,6 +7,11 @@ namespace ShandyGecko.ShandyGeckoDI
 		private readonly Dictionary<ContainerKey, ContainerRegistry> _containerRegistries =
 			new Dictionary<ContainerKey, ContainerRegistry>();
 
+		public ContainerRegistry GetContainerRegistry(ContainerKey key)
+		{
+			return _containerRegistries[key];
+		}
+		
 		public bool IsKeyRegistered(ContainerKey key)
 		{
 			return _containerRegistries.ContainsKey(key);
@@ -37,12 +42,6 @@ namespace ShandyGecko.ShandyGeckoDI
 
 				_containerRegistries.Remove(key);
 			}
-		}
-
-		public T BuildUp<T>() where T : new()
-		{
-			var obj = new T();
-			return obj;
 		}
 	}
 }

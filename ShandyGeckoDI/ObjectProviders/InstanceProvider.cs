@@ -1,14 +1,13 @@
 using System;
-using ShandyGecko.ShandyGeckoDI.Context;
 
 namespace ShandyGecko.ShandyGeckoDI
 {
-	public class InstanceProvider : IObjectProvider
+	public class InstanceProvider<T> : IObjectProvider
 	{
-		private object _instance;
+		private T _instance;
 		private bool _isDisposed;
 		
-		public InstanceProvider(object obj)
+		public InstanceProvider(T obj)
 		{
 			_instance = obj;
 		}
@@ -26,10 +25,10 @@ namespace ShandyGecko.ShandyGeckoDI
 			}
 
 			_isDisposed = true;
-			_instance = null;
+			_instance = default;
 		}
 
-		public object GetObject(BaseContext baseContext)
+		public object GetObject(IContext context)
 		{
 			return _instance;
 		}
