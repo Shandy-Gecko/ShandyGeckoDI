@@ -39,5 +39,10 @@ namespace ShandyGecko.ShandyGeckoDI
 
 			return typeHashCode ^ nameHashCode;
 		}
+
+		public override string ToString()
+		{
+			return $"type {Type}, name {Name}";
+		}
 	}
 }

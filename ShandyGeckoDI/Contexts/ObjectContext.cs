@@ -1,15 +1,13 @@
 namespace ShandyGecko.ShandyGeckoDI
 {
-	public abstract class ObjectContext : BaseContext
+	public class ObjectContext : BaseObjectContext
 	{
-		private Container _container;
-
-		public override Container Container => _container;
-
-		public ObjectContext(Container container)
+		public ObjectContext(Container container) : base(container)
 		{
-			_container = container;
-			
+		}
+
+		public void InstallDependencies()
+		{
 			SetUp();
 		}
 	}

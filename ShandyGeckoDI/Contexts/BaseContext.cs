@@ -65,7 +65,7 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 		}
 
-		private void PostInstall()
+		protected virtual void PostInstall()
 		{
 			foreach (var containerValue in _containerRegistries)
 			{

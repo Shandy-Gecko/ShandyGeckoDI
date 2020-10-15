@@ -34,7 +34,7 @@ namespace ShandyGecko.ShandyGeckoDI
 			return this;
 		}
 
-		public ContainerRegistry SetName(string name)
+		public ContainerRegistry WithName(string name)
 		{
 			foreach (var key in _keys)
 			{
