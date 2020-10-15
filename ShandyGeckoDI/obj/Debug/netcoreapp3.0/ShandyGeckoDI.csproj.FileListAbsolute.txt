@@ -1,0 +1,9 @@
+/Users/ilagutnikov/Git/MetaGameServer/MetaGameServer/MetaGameServer/Externals/ShandyGeckoDI/ShandyGeckoDI/bin/Debug/netcoreapp3.0/ShandyGeckoDI.deps.json
+/Users/ilagutnikov/Git/MetaGameServer/MetaGameServer/MetaGameServer/Externals/ShandyGeckoDI/ShandyGeckoDI/bin/Debug/netcoreapp3.0/ShandyGeckoDI.dll
+/Users/ilagutnikov/Git/MetaGameServer/MetaGameServer/MetaGameServer/Externals/ShandyGeckoDI/ShandyGeckoDI/bin/Debug/netcoreapp3.0/ShandyGeckoDI.pdb
+/Users/ilagutnikov/Git/MetaGameServer/MetaGameServer/MetaGameServer/Externals/ShandyGeckoDI/ShandyGeckoDI/obj/Debug/netcoreapp3.0/ShandyGeckoDI.csprojAssemblyReference.cache
+/Users/ilagutnikov/Git/MetaGameServer/MetaGameServer/MetaGameServer/Externals/ShandyGeckoDI/ShandyGeckoDI/obj/Debug/netcoreapp3.0/ShandyGeckoDI.AssemblyInfoInputs.cache
+/Users/ilagutnikov/Git/MetaGameServer/MetaGameServer/MetaGameServer/Externals/ShandyGeckoDI/ShandyGeckoDI/obj/Debug/netcoreapp3.0/ShandyGeckoDI.AssemblyInfo.cs
+/Users/ilagutnikov/Git/MetaGameServer/MetaGameServer/MetaGameServer/Externals/ShandyGeckoDI/ShandyGeckoDI/obj/Debug/netcoreapp3.0/ShandyGeckoDI.csproj.CoreCompileInputs.cache
+/Users/ilagutnikov/Git/MetaGameServer/MetaGameServer/MetaGameServer/Externals/ShandyGeckoDI/ShandyGeckoDI/obj/Debug/netcoreapp3.0/ShandyGeckoDI.dll
+/Users/ilagutnikov/Git/MetaGameServer/MetaGameServer/MetaGameServer/Externals/ShandyGeckoDI/ShandyGeckoDI/obj/Debug/netcoreapp3.0/ShandyGeckoDI.pdb
