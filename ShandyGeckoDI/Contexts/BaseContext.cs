@@ -6,6 +6,8 @@ namespace ShandyGecko.ShandyGeckoDI
 	{
 		private readonly List<ContainerRegistry> _containerRegistries = new List<ContainerRegistry>();
 
+		public List<ContainerRegistry> ContainerRegistries => _containerRegistries;
+
 		public void Dispose()
 		{
 			foreach (var registry in _containerRegistries)
@@ -13,6 +15,8 @@ namespace ShandyGecko.ShandyGeckoDI
 				registry.ObjectProvider.Dispose();
 				registry.OnContextDispose();
 			}
+			
+			ContainerRegistries.Clear();
 		}
 
 		internal void AddRegistry(ContainerRegistry registry)

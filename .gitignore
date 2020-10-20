@@ -60,3 +60,5 @@ crashlytics-build.properties
 
 ShandyGeckoDI/obj
 ShandyGeckoDI.UnitTests/obj
+ShandyGeckoDI.UnitTests/bin
+ShandyGeckoDI/bin

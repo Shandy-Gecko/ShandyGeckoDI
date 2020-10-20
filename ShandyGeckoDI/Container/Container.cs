@@ -32,9 +32,9 @@ namespace ShandyGecko.ShandyGeckoDI
 			return _containerRegistries.ContainsKey(containerKey);
 		}
 		
-		public ContainerRegistry RegisterInstance<T>(T obj)
+		public ContainerRegistry RegisterInstance<T>(T obj, BaseContext context = null)
 		{
-			return RegisterProvider<T>(new InstanceProvider<T>(obj));
+			return RegisterProvider<T>(new InstanceProvider<T>(obj), context);
 		}
 		
 		public T BuildUp<T>() where T : new()
@@ -51,7 +51,7 @@ namespace ShandyGecko.ShandyGeckoDI
 		
 		internal void AddContainerRegistry(ContainerKey key, ContainerRegistry containerRegistry)
 		{
-			if (!IsKeyRegistered(key))
+			if (IsKeyRegistered(key))
 			{
 				throw new ContainerException($"Container already has key {key}");
 			}

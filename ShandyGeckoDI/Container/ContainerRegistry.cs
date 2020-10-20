@@ -7,16 +7,18 @@ namespace ShandyGecko.ShandyGeckoDI
 		private readonly HashSet<ContainerKey> _keys = new HashSet<ContainerKey>();
 
 		private Container _container;
-		private BaseContext _context;
 		
+		public BaseContext Context { get; private set; }
 		public bool IsNonLazy { get; private set; }
 		public IObjectProvider ObjectProvider { get; }
-		
+
 		public ContainerRegistry(IObjectProvider objectProvider, Container container, BaseContext context = null)
 		{
 			ObjectProvider = objectProvider;
 			_container = container;
-			_context = context;
+			Context = context;
+
+			TryAddRegistryToContext();
 		}
 
 		public void AddKey(ContainerKey key)
@@ -43,7 +45,9 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			foreach (var key in _keys)
 			{
+				_container.RemoveContainerRegistry(key);
 				key.SetName(name);
+				_container.AddContainerRegistry(key, this);
 			}
 			
 			return this;
@@ -55,8 +59,9 @@ namespace ShandyGecko.ShandyGeckoDI
 			return this;
 		}
 
-		public ContainerRegistry SetContext()
+		public ContainerRegistry SetContext(BaseContext context)
 		{
+			Context = context;
 			TryAddRegistryToContext();
 
 			return this;
@@ -72,7 +77,7 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		private void TryAddRegistryToContext()
 		{
-			_context?.AddRegistry(this);
+			Context?.AddRegistry(this);
 		}
 		
 		//TODO добавить методы по подстановке в атрибут параметра или конструктор
