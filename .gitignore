@@ -58,3 +58,5 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+ShandyGeckoDI/obj
+ShandyGeckoDI.UnitTests/obj

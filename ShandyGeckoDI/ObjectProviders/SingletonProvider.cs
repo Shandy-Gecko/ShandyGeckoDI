@@ -22,7 +22,7 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 		}
 
-		public object GetObject(IContext context)
+		public object GetObject(Container container)
 		{
 			if (_isCreated)
 			{
@@ -30,7 +30,7 @@ namespace ShandyGecko.ShandyGeckoDI
 			}
 
 			_instance = _factoryMethod();
-			context.BuildUp(_instance);
+			container.BuildUp(_instance);
 			_isCreated = true;
 
 			return _instance;

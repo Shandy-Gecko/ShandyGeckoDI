@@ -4,15 +4,19 @@ namespace ShandyGecko.ShandyGeckoDI
 {
 	public class ContainerRegistry
 	{
-		private HashSet<ContainerKey> _keys = new HashSet<ContainerKey>();
+		private readonly HashSet<ContainerKey> _keys = new HashSet<ContainerKey>();
 
+		private Container _container;
+		private BaseContext _context;
+		
 		public bool IsNonLazy { get; private set; }
-		public IEnumerable<ContainerKey> ContainerKeys => _keys;
 		public IObjectProvider ObjectProvider { get; }
 		
-		public ContainerRegistry(IObjectProvider objectProvider)
+		public ContainerRegistry(IObjectProvider objectProvider, Container container, BaseContext context = null)
 		{
 			ObjectProvider = objectProvider;
+			_container = container;
+			_context = context;
 		}
 
 		public void AddKey(ContainerKey key)
@@ -30,7 +34,8 @@ namespace ShandyGecko.ShandyGeckoDI
 			var key = new ContainerKey(typeof(T));
 			
 			AddKey(key);
-			
+			_container.AddContainerRegistry(key, this);
+
 			return this;
 		}
 
@@ -49,5 +54,27 @@ namespace ShandyGecko.ShandyGeckoDI
 			IsNonLazy = true;	
 			return this;
 		}
+
+		public ContainerRegistry SetContext()
+		{
+			TryAddRegistryToContext();
+
+			return this;
+		}
+
+		internal void OnContextDispose()
+		{
+			foreach (var key in _keys)
+			{
+				_container.RemoveContainerRegistry(key);
+			}
+		}
+
+		private void TryAddRegistryToContext()
+		{
+			_context?.AddRegistry(this);
+		}
+		
+		//TODO добавить методы по подстановке в атрибут параметра или конструктор
 	}
 }
