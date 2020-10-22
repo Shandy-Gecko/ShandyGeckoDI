@@ -36,16 +36,21 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			return RegisterProvider<T>(new InstanceProvider<T>(obj), context);
 		}
-		
-		public T BuildUp<T>() where T : new()
+
+		public ContainerRegistry RegisterSingletone<T>(BaseContext context = null)
 		{
-			var obj = new T();
-			return obj;
+			return RegisterProvider<T>(new SingletonProvider<T>(context));
 		}
 		
-		public T BuildUp<T>(T obj)
+		public T BuildUpConstructor<T>()
 		{
-			BuildUp(obj.GetType(), obj);
+			var type = typeof(T);
+			return (T) BuildUpConstructor(type);
+		}
+
+		public T BuildUpProperties<T>(T obj)
+		{
+			BuildUpProperties(obj.GetType(), obj);
 			return obj;
 		}
 		
@@ -69,10 +74,57 @@ namespace ShandyGecko.ShandyGeckoDI
 			_containerRegistries.Remove(key);
 		}
 
-		private void BuildUp(Type type, object obj)
+		private object BuildUpConstructor(Type type)
 		{
 			if (type.BaseType != typeof(object))
-				BuildUp(type.BaseType, obj);
+			{
+				return BuildUpConstructor(type.BaseType);	
+			}
+
+			var constructors = type.GetConstructors();
+
+			// Constructor with dependency attribute
+			var constructorsWithDepAttr = GetConstructorsWithDependencyAttribute(constructors).ToList();
+			var count = constructorsWithDepAttr.Count();
+			if (count > 1)
+			{
+				throw new ContainerException("There is more than 1 constructor with Dependency attribute!");
+			}
+
+			if (count != 0)
+			{
+				return ResolveConstructor(constructorsWithDepAttr.First());
+			}
+
+			// Constructor with min parameters
+			var leastParametersConstructor = GetLeastParametersConstructor(constructors);
+			if (leastParametersConstructor != null)
+			{
+				return ResolveConstructor(leastParametersConstructor);
+			}
+			
+			// Default
+			return Activator.CreateInstance(type);
+		}
+
+		private IEnumerable<ConstructorInfo> GetConstructorsWithDependencyAttribute(IEnumerable<ConstructorInfo> constructors)
+		{
+			var dependencyAttrType = typeof(DependencyAttribute);
+			return constructors.Where(x =>
+				x.CustomAttributes.FirstOrDefault(attributeData => attributeData.AttributeType == dependencyAttrType) != null);
+		}
+
+		private ConstructorInfo GetLeastParametersConstructor(IEnumerable<ConstructorInfo> constructors)
+		{
+			var minParamsCount = constructors.Min(x => x.GetParameters().Length);
+
+			return constructors.FirstOrDefault(x => x.GetParameters().Length == minParamsCount);
+		}
+
+		private void BuildUpProperties(Type type, object obj)
+		{
+			if (type.BaseType != typeof(object))
+				BuildUpProperties(type.BaseType, obj);
 			
 			var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
 
@@ -88,6 +140,26 @@ namespace ShandyGecko.ShandyGeckoDI
 			}
 		}
 
+		private object ResolveConstructor(ConstructorInfo constructorInfo)
+		{
+			var constructorParams = constructorInfo.GetParameters();
+			var constructorObjects = new object[constructorParams.Length];
+
+			for (var i = 0; i < constructorParams.Length; i++)
+			{
+				var parameter = constructorParams[i];
+
+				if (!TryGetObjectProviderFromContainer(parameter.ParameterType, parameter.Name, out var objProvider))
+				{
+					objProvider = GetObjectProviderFromContainer(parameter.ParameterType, string.Empty);
+				}
+
+				constructorObjects[i] = objProvider.GetObject(this);
+			}
+			
+			return constructorInfo.Invoke(constructorObjects);
+		}
+		
 		private void ResolveDependency(object obj, Type type, PropertyInfo propertyInfo, string name)
 		{
 			var propertyType = propertyInfo.PropertyType;
@@ -104,6 +176,18 @@ namespace ShandyGecko.ShandyGeckoDI
 			setter.Invoke(obj, new[] {createdObj});
 		}
 
+		private bool TryGetObjectProviderFromContainer(Type type, string name, out IObjectProvider objectProvider)
+		{
+			if (IsKeyRegistered<Type>(name))
+			{
+				objectProvider = GetObjectProviderFromContainer(type, name);
+				return true;
+			}
+
+			objectProvider = null;
+			return false;
+		}
+		
 		private IObjectProvider GetObjectProviderFromContainer(Type type, string name)
 		{
 			var containerKey = new ContainerKey(type, name);

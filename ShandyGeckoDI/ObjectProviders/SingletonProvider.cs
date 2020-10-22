@@ -1,23 +1,16 @@
-using System;
-
 namespace ShandyGecko.ShandyGeckoDI
 {
 	public class SingletonProvider<T> : IObjectProvider
 	{
-		private readonly Func<T> _factoryMethod;
-		
 		private bool _isCreated;
 		private T _instance;
+		private BaseContext _context;
 
-		public SingletonProvider() : this(Activator.CreateInstance<T>)
+		public SingletonProvider(BaseContext context)
 		{
+			_context = context;
 		}
-		
-		public SingletonProvider(Func<T> factoryMethod)
-		{
-			_factoryMethod = factoryMethod;
-		}
-		
+
 		public void Dispose()
 		{
 		}
@@ -29,8 +22,9 @@ namespace ShandyGecko.ShandyGeckoDI
 				return _instance;
 			}
 
-			_instance = _factoryMethod();
-			container.BuildUp(_instance);
+			//TODO передать список параметров для этого провайдера
+			_instance = container.BuildUpConstructor<T>();
+			container.BuildUpProperties(_instance);
 			_isCreated = true;
 
 			return _instance;
