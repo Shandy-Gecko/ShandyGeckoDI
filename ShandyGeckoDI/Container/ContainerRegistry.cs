@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ShandyGecko.ShandyGeckoDI
@@ -5,6 +6,7 @@ namespace ShandyGecko.ShandyGeckoDI
 	public class ContainerRegistry
 	{
 		private readonly HashSet<ContainerKey> _keys = new HashSet<ContainerKey>();
+		private readonly HashSet<Parameter> _parameters = new HashSet<Parameter>();
 
 		private Container _container;
 		
@@ -63,6 +65,55 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			Context = context;
 			TryAddRegistryToContext();
+
+			return this;
+		}
+
+		public ContainerRegistry SetParameter(Parameter parameter)
+		{
+			if (_parameters.Contains(parameter))
+			{
+				throw new ContainerException($"Parameter {parameter} already added to ContainerRegistry {this}");
+			}
+
+			_parameters.Add(parameter);
+			
+			return this;
+		}
+		
+		public ContainerRegistry SetParameter(object obj, Type type, string name = "")
+		{
+			var newParameter = new Parameter(obj, type, name);
+
+			return SetParameter(newParameter);
+		}
+		
+		public ContainerRegistry SetParameter<T>(T obj, string name = "")
+		{
+			return SetParameter(obj, typeof(T), name);
+		}
+
+		public ContainerRegistry SetParameter(object obj, string name = "")
+		{
+			return SetParameter(obj, obj.GetType(), name);
+		}
+
+		public ContainerRegistry SetParameters(params Parameter[] parameters)
+		{
+			foreach (var parameter in parameters)
+			{
+				SetParameter(parameter);
+			}
+
+			return this;
+		}
+
+		public ContainerRegistry SetParameters(params object[] parameters)
+		{
+			foreach (var o in parameters)
+			{
+				SetParameter(o);
+			}
 
 			return this;
 		}

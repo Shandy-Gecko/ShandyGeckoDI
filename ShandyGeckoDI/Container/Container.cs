@@ -22,6 +22,11 @@ namespace ShandyGecko.ShandyGeckoDI
 			return value;
 		}
 
+		public bool IsKeyRegistered(Type type, string name = "")
+		{
+			return IsKeyRegistered(new ContainerKey(type, name));
+		}
+		
 		public bool IsKeyRegistered<T>(string name = "")
 		{
 			return IsKeyRegistered(new ContainerKey(typeof(T), name));
@@ -41,14 +46,20 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			return RegisterProvider<T>(new SingletonProvider<T>(context));
 		}
+
+		public T BuildUpConstructorAndProperties<T>(params Parameter[] parameters)
+		{
+			var obj = BuildUpConstructor<T>(parameters);
+			return BuildUpProperties<T>(obj, parameters);
+		}
 		
-		public T BuildUpConstructor<T>()
+		public T BuildUpConstructor<T>(params Parameter[] parameters)
 		{
 			var type = typeof(T);
-			return (T) BuildUpConstructor(type);
+			return (T) BuildUpConstructor(type, parameters);
 		}
 
-		public T BuildUpProperties<T>(T obj)
+		public T BuildUpProperties<T>(T obj, params Parameter[] parameters)
 		{
 			BuildUpProperties(obj.GetType(), obj);
 			return obj;
@@ -74,7 +85,7 @@ namespace ShandyGecko.ShandyGeckoDI
 			_containerRegistries.Remove(key);
 		}
 
-		private object BuildUpConstructor(Type type)
+		private object BuildUpConstructor(Type type, params Parameter[] parameters)
 		{
 			if (type.BaseType != typeof(object))
 			{
@@ -93,14 +104,14 @@ namespace ShandyGecko.ShandyGeckoDI
 
 			if (count != 0)
 			{
-				return ResolveConstructor(constructorsWithDepAttr.First());
+				return ResolveConstructor(constructorsWithDepAttr.First(), parameters);
 			}
 
 			// Constructor with min parameters
 			var leastParametersConstructor = GetLeastParametersConstructor(constructors);
 			if (leastParametersConstructor != null)
 			{
-				return ResolveConstructor(leastParametersConstructor);
+				return ResolveConstructor(leastParametersConstructor, parameters);
 			}
 			
 			// Default
@@ -140,21 +151,30 @@ namespace ShandyGecko.ShandyGeckoDI
 			}
 		}
 
-		private object ResolveConstructor(ConstructorInfo constructorInfo)
+		private object ResolveConstructor(ConstructorInfo constructorInfo, params Parameter[] parameters)
 		{
 			var constructorParams = constructorInfo.GetParameters();
 			var constructorObjects = new object[constructorParams.Length];
+			var registryParameters = parameters.ToList();
 
 			for (var i = 0; i < constructorParams.Length; i++)
 			{
-				var parameter = constructorParams[i];
+				var constructorParam = constructorParams[i];
 
-				if (!TryGetObjectProviderFromContainer(parameter.ParameterType, parameter.Name, out var objProvider))
+				// Cначала параметер
+				if (TryGetParameter(parameters, constructorParam, out var registryParameter))
 				{
-					objProvider = GetObjectProviderFromContainer(parameter.ParameterType, string.Empty);
+					constructorObjects[i] = registryParameter.Object;
+					continue;	
 				}
 
-				constructorObjects[i] = objProvider.GetObject(this);
+				if (TryGetObjectProvider(constructorParam, out var objectProvider))
+				{
+					constructorObjects[i] = objectProvider.GetObject(this);
+					continue;
+				}
+				
+				throw new ContainerException($"Can't get parameter or object provider for constructor parameter {constructorParam}");
 			}
 			
 			return constructorInfo.Invoke(constructorObjects);
@@ -176,15 +196,43 @@ namespace ShandyGecko.ShandyGeckoDI
 			setter.Invoke(obj, new[] {createdObj});
 		}
 
-		private bool TryGetObjectProviderFromContainer(Type type, string name, out IObjectProvider objectProvider)
+		private bool TryGetObjectProvider(ParameterInfo parameterInfo, out IObjectProvider objectProvider)
 		{
-			if (IsKeyRegistered<Type>(name))
+			if (IsKeyRegistered(parameterInfo.ParameterType, parameterInfo.Name))
 			{
-				objectProvider = GetObjectProviderFromContainer(type, name);
+				objectProvider = GetObjectProviderFromContainer(parameterInfo.ParameterType, parameterInfo.Name);
+				return true;
+			}
+			
+			if (IsKeyRegistered(parameterInfo.ParameterType))
+			{
+				objectProvider = GetObjectProviderFromContainer(parameterInfo.ParameterType, string.Empty);;
 				return true;
 			}
 
 			objectProvider = null;
+			return false;
+		}
+		
+		private bool TryGetParameter(IEnumerable<Parameter> parameters, ParameterInfo parameterInfo, out Parameter parameter)
+		{
+			var parameterWithName =
+				parameters.FirstOrDefault(x => x.Name == parameterInfo.Name && x.Type == parameterInfo.ParameterType);
+
+			if (parameterWithName != null)
+			{
+				parameter = parameterWithName;
+				return true;
+			}
+
+			var parameterWithoutName = parameters.FirstOrDefault(x => x.Type == parameterInfo.ParameterType);
+			if (parameterWithoutName != null)
+			{
+				parameter = parameterWithoutName;
+				return true;
+			}
+
+			parameter = null;
 			return false;
 		}
 		

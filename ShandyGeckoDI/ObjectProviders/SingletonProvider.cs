@@ -15,16 +15,14 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 		}
 
-		public object GetObject(Container container)
+		public object GetObject(Container container, params Parameter[] parameters)
 		{
 			if (_isCreated)
 			{
 				return _instance;
 			}
 
-			//TODO передать список параметров для этого провайдера
-			_instance = container.BuildUpConstructor<T>();
-			container.BuildUpProperties(_instance);
+			_instance = container.BuildUpConstructorAndProperties<T>(parameters);
 			_isCreated = true;
 
 			return _instance;
