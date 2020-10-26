@@ -79,5 +79,33 @@ namespace ShandyGeckoDI.UnitTests.Container
 			Assert.AreEqual(injection, actual.Test1);
 			Assert.IsNotNull(actual.Test2);
 		}
+
+		[Test]
+		public void ConstructorParameterInjection()
+		{
+			var container = new ShandyGecko.ShandyGeckoDI.Container();
+			var test1 = new Test1();
+			var test2 = container.BuildUpConstructorAndProperties<Test2>(new Parameter(test1));
+			
+			Assert.NotNull(test2);
+			Assert.AreEqual(test1, test2.Test1);
+		}
+		
+		[Test]
+		public void ConstructorParameterOverProviderInjection()
+		{
+			var container = new ShandyGecko.ShandyGeckoDI.Container();
+			
+			var test1Param = new Test1();
+			var test1Provider = new Test1();
+
+			container.RegisterInstance(test1Provider);
+			
+			var test2 = container.BuildUpConstructorAndProperties<Test2>(new Parameter(test1Param));
+			
+			Assert.NotNull(test2);
+			Assert.AreEqual(test1Param, test2.Test1);
+			Assert.AreNotEqual(test1Provider, test2.Test1);
+		}
 	}
 }
