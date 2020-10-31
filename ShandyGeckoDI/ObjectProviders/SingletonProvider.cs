@@ -22,7 +22,7 @@ namespace ShandyGecko.ShandyGeckoDI
 				return _instance;
 			}
 
-			_instance = container.BuildUpConstructorAndProperties<T>(parameters);
+			_instance = container.BuildUpType<T>(parameters);
 			_isCreated = true;
 
 			return _instance;

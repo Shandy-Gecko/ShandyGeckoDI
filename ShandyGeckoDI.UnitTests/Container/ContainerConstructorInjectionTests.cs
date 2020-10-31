@@ -43,7 +43,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 			var container = new ShandyGecko.ShandyGeckoDI.Container();
 			container.RegisterSingletone<Test1>();
 
-			var actual = container.BuildUpConstructor<Test1>();
+			var actual = container.BuildUpType<Test1>();
 			
 			Assert.IsNotNull(actual);
 		}
@@ -55,9 +55,8 @@ namespace ShandyGeckoDI.UnitTests.Container
 			var injection = new Test1();
 
 			container.RegisterInstance(injection);
-			container.RegisterSingletone<Test2>();
-			
-			var actual = container.BuildUpConstructor<Test2>();
+
+			var actual = container.BuildUpType<Test2>();
 			
 			Assert.IsNotNull(actual);
 			Assert.AreEqual(injection, actual.Test1);
@@ -71,9 +70,8 @@ namespace ShandyGeckoDI.UnitTests.Container
 
 			container.RegisterInstance(injection);
 			container.RegisterSingletone<Test2>();
-			container.RegisterSingletone<Test3>();
-			
-			var actual = container.BuildUpConstructor<Test3>();
+
+			var actual = container.BuildUpType<Test3>();
 			
 			Assert.IsNotNull(actual);
 			Assert.AreEqual(injection, actual.Test1);
@@ -85,7 +83,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		{
 			var container = new ShandyGecko.ShandyGeckoDI.Container();
 			var test1 = new Test1();
-			var test2 = container.BuildUpConstructorAndProperties<Test2>(new Parameter(test1));
+			var test2 = container.BuildUpType<Test2>(new Parameter(test1));
 			
 			Assert.NotNull(test2);
 			Assert.AreEqual(test1, test2.Test1);
@@ -101,7 +99,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 
 			container.RegisterInstance(test1Provider);
 			
-			var test2 = container.BuildUpConstructorAndProperties<Test2>(new Parameter(test1Param));
+			var test2 = container.BuildUpType<Test2>(new Parameter(test1Param));
 			
 			Assert.NotNull(test2);
 			Assert.AreEqual(test1Param, test2.Test1);

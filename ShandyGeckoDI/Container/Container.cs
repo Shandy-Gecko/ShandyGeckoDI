@@ -47,21 +47,79 @@ namespace ShandyGecko.ShandyGeckoDI
 			return RegisterProvider<T>(new SingletonProvider<T>(context));
 		}
 
-		public T BuildUpConstructorAndProperties<T>(params Parameter[] parameters)
+		public T Resolve<T>(string name = "", params Parameter[] parameters)
 		{
-			var obj = BuildUpConstructor<T>(parameters);
-			return BuildUpProperties<T>(obj, parameters);
+			var obj = Resolve(typeof(T), name, parameters);
+			return (T) obj;
 		}
 		
-		public T BuildUpConstructor<T>(params Parameter[] parameters)
+		public object Resolve(Type type, string name = "", params Parameter[] parameters)
 		{
-			var type = typeof(T);
-			return (T) BuildUpConstructor(type, parameters);
+			if (!TryGetObjectProvider(type, name, out var objectProvider))
+			{
+				throw new ContainerException($"Can't get object for type {type} and name {name}");
+			}
+
+			return objectProvider.GetObject(this, parameters);
+		} 
+		
+		public T TryResolve<T>(string name = "", params Parameter[] parameters)
+		{
+			var obj = TryResolve(typeof(T), name, parameters);
+			return (T) obj;
+		}
+		
+		public object TryResolve(Type type, string name = "", params Parameter[] parameters)
+		{
+			if (!TryGetObjectProvider(type, name, out var objectProvider))
+			{
+				return null;
+			}
+
+			return objectProvider.GetObject(this, parameters);
+		} 
+
+		/// <summary>
+		/// Create object of type T and BuildUp it
+		/// </summary>
+		/// <param name="parameters"></param>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public T BuildUpType<T>(params Parameter[] parameters)
+		{
+			var obj = BuildUpConstructorInternal<T>(parameters);
+			return BuildUpPropertiesInternal<T>(obj, parameters);
 		}
 
-		public T BuildUpProperties<T>(T obj, params Parameter[] parameters)
+		/// <summary>
+		/// BuildUp object of type T
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <param name="parameters"></param>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public T BuildUp<T>(T obj, params Parameter[] parameters)
 		{
-			BuildUpProperties(obj.GetType(), obj);
+			return BuildUpPropertiesInternal<T>(obj, parameters);
+		}
+		
+		public void Dispose()
+		{
+			foreach (var containerRegistry in _containerRegistries.Values)
+			{
+				containerRegistry.ObjectProvider.Dispose();
+			}
+		}
+		
+		private T BuildUpConstructorInternal<T>(params Parameter[] parameters)
+		{
+			var type = typeof(T);
+			return (T) BuildUpConstructorInternal(type, parameters);
+		}
+
+		private T BuildUpPropertiesInternal<T>(T obj, params Parameter[] parameters)
+		{
+			BuildUpPropertiesInternal(obj.GetType(), obj, parameters);
 			return obj;
 		}
 		
@@ -85,11 +143,11 @@ namespace ShandyGecko.ShandyGeckoDI
 			_containerRegistries.Remove(key);
 		}
 
-		private object BuildUpConstructor(Type type, params Parameter[] parameters)
+		private object BuildUpConstructorInternal(Type type, params Parameter[] parameters)
 		{
-			if (type.BaseType != typeof(object))
+			if (type.BaseType is { } && type.BaseType != typeof(object) && !type.BaseType.IsAbstract)
 			{
-				return BuildUpConstructor(type.BaseType);	
+				return BuildUpConstructorInternal(type.BaseType);	
 			}
 
 			var constructors = type.GetConstructors();
@@ -132,22 +190,27 @@ namespace ShandyGecko.ShandyGeckoDI
 			return constructors.FirstOrDefault(x => x.GetParameters().Length == minParamsCount);
 		}
 
-		private void BuildUpProperties(Type type, object obj)
+		private void BuildUpPropertiesInternal(Type type, object obj, params Parameter[] parameters)
 		{
 			if (type.BaseType != typeof(object))
-				BuildUpProperties(type.BaseType, obj);
+				BuildUpPropertiesInternal(type.BaseType, obj);
 			
 			var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
 
 			foreach (var property in properties)
 			{
-				var dependencyAttr = property.GetCustomAttributes(typeof(DependencyAttribute), true).FirstOrDefault() as DependencyAttribute;
-				if (dependencyAttr == null)
+				var paramAttr = TryGetAttribute<ParameterAttribute>(property);
+				if (paramAttr != null)
 				{
+					ResolveParameterAttribute(obj, property, paramAttr.Name, parameters);
 					continue;
 				}
 
-				ResolveDependency(obj, type, property, dependencyAttr.Name);
+				var dependencyAttr = TryGetAttribute<DependencyAttribute>(property);
+				if (dependencyAttr != null)
+				{
+					ResolveDependencyAttribute(obj, property, dependencyAttr.Name);
+				}
 			}
 		}
 
@@ -155,7 +218,6 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			var constructorParams = constructorInfo.GetParameters();
 			var constructorObjects = new object[constructorParams.Length];
-			var registryParameters = parameters.ToList();
 
 			for (var i = 0; i < constructorParams.Length; i++)
 			{
@@ -180,10 +242,9 @@ namespace ShandyGecko.ShandyGeckoDI
 			return constructorInfo.Invoke(constructorObjects);
 		}
 		
-		private void ResolveDependency(object obj, Type type, PropertyInfo propertyInfo, string name)
+		private void ResolveDependencyAttribute(object obj, PropertyInfo propertyInfo, string name)
 		{
-			var propertyType = propertyInfo.PropertyType;
-			var objProvider = GetObjectProviderFromContainer(propertyType, name);
+			var objProvider = GetObjectProviderFromContainer(propertyInfo.PropertyType, name);
 
 			var createdObj = objProvider.GetObject(this);
 			
@@ -194,6 +255,25 @@ namespace ShandyGecko.ShandyGeckoDI
 			}
 			
 			setter.Invoke(obj, new[] {createdObj});
+		}
+		
+		private void ResolveParameterAttribute(object obj, PropertyInfo propertyInfo, string name, IEnumerable<Parameter> parameters)
+		{
+			var parameter = parameters.FirstOrDefault(x => x.Type == propertyInfo.PropertyType && x.Name == name);
+			object targetObj = null;
+
+			if (parameter != null)
+			{
+				targetObj = parameter.Object;
+			}
+			
+			var setter = propertyInfo.GetSetMethod(true);
+			if (setter == null)
+			{
+				throw new ContainerException($"Property {propertyInfo} has null setter");
+			}
+			
+			setter.Invoke(obj, new[] {targetObj});
 		}
 
 		private bool TryGetObjectProvider(ParameterInfo parameterInfo, out IObjectProvider objectProvider)
@@ -207,6 +287,18 @@ namespace ShandyGecko.ShandyGeckoDI
 			if (IsKeyRegistered(parameterInfo.ParameterType))
 			{
 				objectProvider = GetObjectProviderFromContainer(parameterInfo.ParameterType, string.Empty);;
+				return true;
+			}
+
+			objectProvider = null;
+			return false;
+		}
+
+		private bool TryGetObjectProvider(Type type, string name, out IObjectProvider objectProvider)
+		{
+			if (IsKeyRegistered(type, name))
+			{
+				objectProvider = GetObjectProviderFromContainer(type, name);
 				return true;
 			}
 
@@ -254,12 +346,9 @@ namespace ShandyGecko.ShandyGeckoDI
 			return containerRegistry.ObjectProvider;
 		}
 
-		public void Dispose()
+		private T TryGetAttribute<T>(PropertyInfo propertyInfo)
 		{
-			foreach (var containerRegistry in _containerRegistries.Values)
-			{
-				containerRegistry.ObjectProvider.Dispose();
-			}
+			return (T) propertyInfo.GetCustomAttributes(typeof(T), true).FirstOrDefault();
 		}
 	}
 }
