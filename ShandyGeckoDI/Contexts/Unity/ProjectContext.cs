@@ -24,7 +24,7 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 			
 			Log.Info(Tag, $"Adding context to project {ProjectName}");
 
-			base.Awake();	
+			RegisterTypes(Container, Context);	
 		}
 
 		protected override void OnDestroy()

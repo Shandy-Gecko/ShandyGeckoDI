@@ -1,10 +1,8 @@
 #if UNITY_5_3_OR_NEWER
-using UnityEngine;
-
 namespace ShandyGecko.ShandyGeckoDI.Unity
 {
 	//TODO заменить на GeckoBehaviour
-	public abstract class UnityContext : MonoBehaviour
+	public abstract class UnityContext : GeckoBehaviour
 	{
 		private Context _context;
 
@@ -13,8 +11,9 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 
 		protected abstract void RegisterTypes(GeckoContainer container, Context context);
 		
-		protected virtual void Awake()
+		protected override void Awake()
 		{
+			base.Awake();
 			RegisterTypes(Container, Context);
 		}
 

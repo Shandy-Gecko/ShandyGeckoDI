@@ -1,9 +1,37 @@
+#if UNITY_5_3_OR_NEWER
 using UnityEngine;
 
-namespace ShandyGeckoDI.ShandyGeckoDI.Unity
+namespace ShandyGecko.ShandyGeckoDI.Unity
 {
 	public class GeckoBehaviour : MonoBehaviour
 	{
+		private GeckoContainer _rootContainer;
+
+		public bool BuiltUp { get; private set; }
 		
+		protected virtual void Awake()
+		{
+			BuildUp();
+		}
+
+		//TODO использовать для провайдеров
+		public void BuildUp()
+		{
+			if (BuiltUp)
+				return;
+
+			BuiltUp = true;
+			TryGetRootContainer();
+			_rootContainer.BuildUp(this);
+		}
+
+		private void TryGetRootContainer()
+		{
+			if (_rootContainer != null)
+				return;
+
+			_rootContainer = UnityContainerProvider.Instance.RootContainer;
+		}
 	}
 }
+#endif
