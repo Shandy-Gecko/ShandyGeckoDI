@@ -14,6 +14,8 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 		
 		private string _objectName;
 		
+		protected override GeckoContainer Container => UnityContainerProvider.Instance.RootContainer;
+		
 		protected override void Awake()
 		{
 			_objectName = name;

@@ -23,7 +23,8 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 			DontDestroyOnLoad(gameObject);
 			
 			Log.Info(Tag, $"Adding context to project {ProjectName}");
-
+			UnityContainerProvider.Instance.SetContainer(Container);
+			
 			RegisterTypes(Container, Context);	
 		}
 

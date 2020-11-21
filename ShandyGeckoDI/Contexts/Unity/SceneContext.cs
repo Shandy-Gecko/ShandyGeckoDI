@@ -14,7 +14,9 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 		[LogFilter] public const string Tag = "SceneContext";
 		
 		private string _sceneName;
-		
+
+		protected override GeckoContainer Container => UnityContainerProvider.Instance.RootContainer;
+
 		protected override void Awake()
 		{
 			//TODO проверить
