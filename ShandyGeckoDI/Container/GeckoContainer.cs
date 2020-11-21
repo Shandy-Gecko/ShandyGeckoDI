@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace ShandyGecko.ShandyGeckoDI
 {
-	public class Container : IDisposable
+	public class GeckoContainer : IDisposable
 	{
 		private readonly Dictionary<ContainerKey, ContainerRegistry> _containerRegistries =
 			new Dictionary<ContainerKey, ContainerRegistry>();
@@ -145,7 +145,7 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		private object BuildUpConstructorInternal(Type type, params Parameter[] parameters)
 		{
-			if (type.BaseType is { } && type.BaseType != typeof(object) && !type.BaseType.IsAbstract)
+			if (!(type.BaseType is null) && type.BaseType.IsClass && type.BaseType != typeof(object) && !type.BaseType.IsAbstract)
 			{
 				return BuildUpConstructorInternal(type.BaseType);	
 			}

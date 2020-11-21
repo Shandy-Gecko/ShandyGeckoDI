@@ -15,14 +15,14 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 		}
 
-		public object GetObject(Container container, params Parameter[] parameters)
+		public object GetObject(GeckoContainer geckoContainer, params Parameter[] parameters)
 		{
 			if (_isCreated)
 			{
 				return _instance;
 			}
 
-			_instance = container.BuildUpType<T>(parameters);
+			_instance = geckoContainer.BuildUpType<T>(parameters);
 			_isCreated = true;
 
 			return _instance;

@@ -8,16 +8,16 @@ namespace ShandyGecko.ShandyGeckoDI
 		private readonly HashSet<ContainerKey> _keys = new HashSet<ContainerKey>();
 		private readonly HashSet<Parameter> _parameters = new HashSet<Parameter>();
 
-		private Container _container;
+		private readonly GeckoContainer _geckoContainer;
 		
 		public BaseContext Context { get; private set; }
 		public bool IsNonLazy { get; private set; }
 		public IObjectProvider ObjectProvider { get; }
 
-		public ContainerRegistry(IObjectProvider objectProvider, Container container, BaseContext context = null)
+		public ContainerRegistry(IObjectProvider objectProvider, GeckoContainer geckoContainer, BaseContext context = null)
 		{
 			ObjectProvider = objectProvider;
-			_container = container;
+			_geckoContainer = geckoContainer;
 			Context = context;
 
 			TryAddRegistryToContext();
@@ -38,7 +38,7 @@ namespace ShandyGecko.ShandyGeckoDI
 			var key = new ContainerKey(typeof(T));
 			
 			AddKey(key);
-			_container.AddContainerRegistry(key, this);
+			_geckoContainer.AddContainerRegistry(key, this);
 
 			return this;
 		}
@@ -47,9 +47,9 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			foreach (var key in _keys)
 			{
-				_container.RemoveContainerRegistry(key);
+				_geckoContainer.RemoveContainerRegistry(key);
 				key.SetName(name);
-				_container.AddContainerRegistry(key, this);
+				_geckoContainer.AddContainerRegistry(key, this);
 			}
 			
 			return this;
@@ -122,7 +122,7 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			foreach (var key in _keys)
 			{
-				_container.RemoveContainerRegistry(key);
+				_geckoContainer.RemoveContainerRegistry(key);
 			}
 		}
 
@@ -130,7 +130,5 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			Context?.AddRegistry(this);
 		}
-		
-		//TODO добавить методы по подстановке в атрибут параметра или конструктор
 	}
 }

@@ -11,7 +11,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		[Test]
 		public void ContainerRegisterInstanceTest()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.Container();
+			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
 			container.RegisterInstance(new TestClass());
 			
 			Assert.IsTrue(container.IsKeyRegistered<TestClass>());
@@ -22,7 +22,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		{
 			var name = "TestName";
 			
-			var container = new ShandyGecko.ShandyGeckoDI.Container();
+			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
 			container.RegisterInstance(new TestClass()).WithName(name);
 
 			Assert.IsFalse(container.IsKeyRegistered<TestClass>());

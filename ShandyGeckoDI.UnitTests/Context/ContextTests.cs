@@ -11,7 +11,7 @@ namespace ShandyGeckoDI.UnitTests.Context
 		[Test]
 		public void SetContextOnRegistryTest()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.Container();
+			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
 			var context = new ShandyGecko.ShandyGeckoDI.Context();
 
 			container.RegisterInstance(new TestClass(), context);
@@ -21,7 +21,7 @@ namespace ShandyGeckoDI.UnitTests.Context
 		[Test]
 		public void SetContextWithSetterTest()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.Container();
+			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
 			var context = new ShandyGecko.ShandyGeckoDI.Context();
 
 			container.RegisterInstance(new TestClass()).SetContext(context);
@@ -31,7 +31,7 @@ namespace ShandyGeckoDI.UnitTests.Context
 		[Test]
 		public void ContextDisposeText()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.Container();
+			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
 			var context = new ShandyGecko.ShandyGeckoDI.Context();
 			
 			container.RegisterInstance(new TestClass(), context);

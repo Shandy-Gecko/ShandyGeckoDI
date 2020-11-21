@@ -28,7 +28,7 @@ namespace ShandyGecko.ShandyGeckoDI
 			_instance = default;
 		}
 
-		public object GetObject(Container container, params Parameter[] parameters)
+		public object GetObject(GeckoContainer geckoContainer, params Parameter[] parameters)
 		{
 			return _instance;
 		}

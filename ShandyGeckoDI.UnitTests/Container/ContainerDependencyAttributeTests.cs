@@ -17,7 +17,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		[Test]
 		public void TestResolveDependency()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.Container();
+			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
 			var test1 = new Test1();
 
 			container.RegisterInstance(test1);

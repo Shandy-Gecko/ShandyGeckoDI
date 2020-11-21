@@ -4,6 +4,6 @@ namespace ShandyGecko.ShandyGeckoDI
 {
 	public interface IObjectProvider : IDisposable
 	{
-		object GetObject(Container container, params Parameter[] parameters);
+		object GetObject(GeckoContainer geckoContainer, params Parameter[] parameters);
 	}
 }
