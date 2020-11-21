@@ -1,3 +1,15 @@
-﻿{
-	"name": "ShandyGeckoDI"
+{
+    "name": "ShandyGeckoDI",
+    "references": [
+        "GUID:c8a19cd18d82049d296e1196148f8a9d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
