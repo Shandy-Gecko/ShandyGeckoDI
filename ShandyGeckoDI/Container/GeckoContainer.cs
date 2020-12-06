@@ -36,16 +36,6 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			return _containerRegistries.ContainsKey(containerKey);
 		}
-		
-		public ContainerRegistry RegisterInstance<T>(T obj, BaseContext context = null)
-		{
-			return RegisterProvider<T>(new InstanceProvider<T>(obj), context);
-		}
-
-		public ContainerRegistry RegisterSingletone<T>(BaseContext context = null)
-		{
-			return RegisterProvider<T>(new SingletonProvider<T>(), context);
-		}
 
 		public T Resolve<T>(string name = "", params Parameter[] parameters)
 		{

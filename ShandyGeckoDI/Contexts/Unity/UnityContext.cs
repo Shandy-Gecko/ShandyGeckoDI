@@ -1,7 +1,6 @@
 #if UNITY_5_3_OR_NEWER
 namespace ShandyGecko.ShandyGeckoDI.Unity
 {
-	//TODO заменить на GeckoBehaviour
 	public abstract class UnityContext : GeckoBehaviour
 	{
 		private Context _context;

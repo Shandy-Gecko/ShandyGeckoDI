@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using ShandyGecko.ShandyGeckoDI;
 
 namespace ShandyGeckoDI.UnitTests.Container
 {

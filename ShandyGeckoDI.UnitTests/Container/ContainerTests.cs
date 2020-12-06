@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using ShandyGecko.ShandyGeckoDI;
 
 namespace ShandyGeckoDI.UnitTests.Container
 {
@@ -11,7 +12,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		[Test]
 		public void ContainerRegisterInstanceTest()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
+			var container = new GeckoContainer();
 			container.RegisterInstance(new TestClass());
 			
 			Assert.IsTrue(container.IsKeyRegistered<TestClass>());
@@ -22,7 +23,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		{
 			var name = "TestName";
 			
-			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
+			var container = new GeckoContainer();
 			container.RegisterInstance(new TestClass()).WithName(name);
 
 			Assert.IsFalse(container.IsKeyRegistered<TestClass>());
