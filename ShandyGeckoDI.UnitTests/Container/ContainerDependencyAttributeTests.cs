@@ -17,7 +17,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		[Test]
 		public void TestResolveDependency()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
+			var container = new GeckoContainer();
 			var test1 = new Test1();
 
 			container.RegisterInstance(test1);
@@ -27,5 +27,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 			
 			Assert.AreEqual(test1, test2.Test1);
 		}
+		
+		//TODO дописать - нужно проверить инъекцию во все варианты доступности свойства
 	}
 }

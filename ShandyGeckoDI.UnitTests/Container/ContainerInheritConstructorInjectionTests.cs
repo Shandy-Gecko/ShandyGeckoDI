@@ -30,7 +30,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		[Test]
 		public void TestInjectInInheritedConstructor()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
+			var container = new GeckoContainer();
 			var test1 = new Test1();
 
 			container.RegisterInstance(test1);

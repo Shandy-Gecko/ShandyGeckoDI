@@ -18,7 +18,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		[Test]
 		public void ParameterBuildUpTest()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
+			var container = new GeckoContainer();
 			var test2 = new Test2();
 
 			var test1_1 = new Test1();

@@ -6,6 +6,11 @@ namespace ShandyGecko.ShandyGeckoDI
 	{
 		private bool _isCreated;
 		private T _instance;
+		
+		public Type GetObjectType()
+		{
+			return typeof(T);
+		}
 
 		public void Dispose()
 		{

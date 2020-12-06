@@ -12,6 +12,11 @@ namespace ShandyGecko.ShandyGeckoDI
 			_instance = obj;
 		}
 		
+		public Type GetObjectType()
+		{
+			return typeof(T);
+		}
+		
 		public void Dispose()
 		{
 			if (_isDisposed)

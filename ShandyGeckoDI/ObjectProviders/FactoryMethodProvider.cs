@@ -10,7 +10,12 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			_factoryMethod = factoryMethod;
 		}
-		
+
+		public Type GetObjectType()
+		{
+			return typeof(T);
+		}
+
 		public object GetObject(GeckoContainer geckoContainer, params Parameter[] parameters)
 		{
 			if (_factoryMethod == null)

@@ -9,6 +9,7 @@ namespace ShandyGecko.ShandyGeckoDI
 		private readonly HashSet<Parameter> _parameters = new HashSet<Parameter>();
 
 		private readonly GeckoContainer _geckoContainer;
+		private string _cachedName = string.Empty;
 		
 		public BaseContext Context { get; private set; }
 		public bool IsNonLazy { get; private set; }
@@ -35,8 +36,14 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		public ContainerRegistry As<T>()
 		{
-			var key = new ContainerKey(typeof(T));
+			var objectType = ObjectProvider.GetObjectType();
+			var parentType = typeof(T);
 			
+			if (!parentType.IsAssignableFrom(objectType))
+				throw new ContainerException($"{objectType} isn't subclass of {parentType}");
+			
+			var key = new ContainerKey(typeof(T), _cachedName);
+
 			AddKey(key);
 			_geckoContainer.AddContainerRegistry(key, this);
 
@@ -45,10 +52,11 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		public ContainerRegistry WithName(string name)
 		{
+			_cachedName = name;
 			foreach (var key in _keys)
 			{
 				_geckoContainer.RemoveContainerRegistry(key);
-				key.SetName(name);
+				key.SetName(_cachedName);
 				_geckoContainer.AddContainerRegistry(key, this);
 			}
 			

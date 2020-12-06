@@ -16,7 +16,12 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			_path = path;
 		}
-		
+
+		public Type GetObjectType()
+		{
+			return typeof(T);
+		}
+
 		public object GetObject(GeckoContainer geckoContainer, params Parameter[] parameters)
 		{
 			if (!IsDestroyed())
