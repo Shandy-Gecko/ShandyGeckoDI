@@ -38,7 +38,6 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 
 			_geckoContainer = geckoContainer;
 		}
-		
 	}
 }
 #endif

@@ -15,14 +15,14 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 		}
 
 		//TODO использовать для провайдеров
-		public void BuildUp()
+		public void BuildUp(params Parameter[] parameters)
 		{
 			if (BuiltUp)
 				return;
 
 			BuiltUp = true;
 			TryGetRootContainer();
-			_rootContainer.BuildUp(this);
+			_rootContainer.BuildUp(this, parameters);
 		}
 
 		private void TryGetRootContainer()

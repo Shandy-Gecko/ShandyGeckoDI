@@ -5,7 +5,7 @@ using UnityEngine;
 namespace ShandyGecko.ShandyGeckoDI.Unity
 {
 	/// <summary>
-	/// Контекст, который унчтожается при выключении игры
+	/// Контекст, который уничтожается при выключении игры
 	/// </summary>
 	[RequireComponent(typeof(GameObject))]
 	public abstract class ProjectContext : UnityContext

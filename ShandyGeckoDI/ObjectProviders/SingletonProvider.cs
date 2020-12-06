@@ -1,18 +1,22 @@
+using System;
+
 namespace ShandyGecko.ShandyGeckoDI
 {
 	public class SingletonProvider<T> : IObjectProvider
 	{
 		private bool _isCreated;
 		private T _instance;
-		private BaseContext _context;
-
-		public SingletonProvider(BaseContext context)
-		{
-			_context = context;
-		}
 
 		public void Dispose()
 		{
+			if (!_isCreated)
+				return;
+			
+			if (_instance is IDisposable disposable)
+				disposable.Dispose();
+
+			_isCreated = false;
+			_instance = default;
 		}
 
 		public object GetObject(GeckoContainer geckoContainer, params Parameter[] parameters)

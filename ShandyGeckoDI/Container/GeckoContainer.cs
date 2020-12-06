@@ -44,7 +44,7 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		public ContainerRegistry RegisterSingletone<T>(BaseContext context = null)
 		{
-			return RegisterProvider<T>(new SingletonProvider<T>(context));
+			return RegisterProvider<T>(new SingletonProvider<T>(), context);
 		}
 
 		public T Resolve<T>(string name = "", params Parameter[] parameters)
