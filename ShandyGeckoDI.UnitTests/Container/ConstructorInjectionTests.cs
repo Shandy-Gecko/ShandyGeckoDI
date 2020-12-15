@@ -3,7 +3,7 @@ using ShandyGecko.ShandyGeckoDI;
 
 namespace ShandyGeckoDI.UnitTests.Container
 {
-	public class ContainerConstructorInjectionTests
+	public class ConstructorInjectionTests
 	{
 		private class Test1
 		{
@@ -40,7 +40,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		[Test]
 		public void DefaultConstructorTest()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
+			var container = new GeckoContainer();
 			container.RegisterSingletone<Test1>();
 
 			var actual = container.BuildUpType<Test1>();
@@ -51,7 +51,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		[Test]
 		public void ConstructorInjectionTest()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
+			var container = new GeckoContainer();
 			var injection = new Test1();
 
 			container.RegisterInstance(injection);
@@ -65,7 +65,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		[Test]
 		public void ConstructorWithDependencyAttributeInjectionTest()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
+			var container = new GeckoContainer();
 			var injection = new Test1();
 
 			container.RegisterInstance(injection);
@@ -92,7 +92,7 @@ namespace ShandyGeckoDI.UnitTests.Container
 		[Test]
 		public void ConstructorParameterOverProviderInjection()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
+			var container = new GeckoContainer();
 			
 			var test1Param = new Test1();
 			var test1Provider = new Test1();

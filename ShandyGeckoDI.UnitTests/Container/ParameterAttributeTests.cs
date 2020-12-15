@@ -3,7 +3,7 @@ using ShandyGecko.ShandyGeckoDI;
 
 namespace ShandyGeckoDI.UnitTests.Container
 {
-	public class ContainerParameterAttributeTests
+	public class ParameterAttributeTests
 	{
 		private class Test1
 		{

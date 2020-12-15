@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ShandyGecko.LogSystem;
 
 namespace ShandyGecko.ShandyGeckoDI
 {
 	public class GeckoContainer : IDisposable
 	{
+		[LogFilter] public const string Tag = "GeckoContainer";
+		
 		private readonly Dictionary<ContainerKey, ContainerRegistry> _containerRegistries =
 			new Dictionary<ContainerKey, ContainerRegistry>();
 
@@ -268,15 +271,28 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		private bool TryGetObjectProvider(ParameterInfo parameterInfo, out IObjectProvider objectProvider)
 		{
-			if (IsKeyRegistered(parameterInfo.ParameterType, parameterInfo.Name))
+
+			var allKeys = _containerRegistries.Keys.Where(x =>
+				x.Type == parameterInfo.ParameterType && string.Equals(x.Name, parameterInfo.Name,
+					StringComparison.InvariantCultureIgnoreCase));
+
+			if (allKeys.Count() > 1)
 			{
-				objectProvider = GetObjectProviderFromContainer(parameterInfo.ParameterType, parameterInfo.Name);
+				Log.Warning(Tag, $"Found more than one object provider with name {parameterInfo.Name}! " +
+				                 "Constructor/method injection isn't case-sensitive!");
+			}
+
+			if (allKeys.Any())
+			{
+				var firstKey = allKeys.First();
+
+				objectProvider = GetObjectProviderFromContainer(firstKey);
 				return true;
 			}
-			
+
 			if (IsKeyRegistered(parameterInfo.ParameterType))
 			{
-				objectProvider = GetObjectProviderFromContainer(parameterInfo.ParameterType, string.Empty);;
+				objectProvider = GetObjectProviderFromContainer(parameterInfo.ParameterType, string.Empty);
 				return true;
 			}
 
@@ -298,9 +314,20 @@ namespace ShandyGecko.ShandyGeckoDI
 		
 		private bool TryGetParameter(IEnumerable<Parameter> parameters, ParameterInfo parameterInfo, out Parameter parameter)
 		{
-			var parameterWithName =
-				parameters.FirstOrDefault(x => x.Name == parameterInfo.Name && x.Type == parameterInfo.ParameterType);
+			//TODO Тонкое место - что мы делаем с именами вида Test1 и test1
+			var parametersWithName =
+				parameters.Where(x =>
+					string.Equals(x.Name, parameterInfo.Name, StringComparison.CurrentCultureIgnoreCase) &&
+					x.Type == parameterInfo.ParameterType);
 
+			if (parametersWithName.Count() > 1)
+			{
+				Log.Warning(Tag, $"Found more than one parameter with name {parameterInfo.Name}! " +
+				                 "Constructor/method injection isn't case-sensitive!");
+			}
+
+			var parameterWithName = parametersWithName.FirstOrDefault();
+			
 			if (parameterWithName != null)
 			{
 				parameter = parameterWithName;
@@ -321,6 +348,11 @@ namespace ShandyGecko.ShandyGeckoDI
 		private IObjectProvider GetObjectProviderFromContainer(Type type, string name)
 		{
 			var containerKey = new ContainerKey(type, name);
+			return GetObjectProviderFromContainer(containerKey);
+		}
+
+		private IObjectProvider GetObjectProviderFromContainer(ContainerKey containerKey)
+		{
 			if (!_containerRegistries.ContainsKey(containerKey))
 			{
 				throw new ContainerException($"Key {containerKey} isn't registered!");
