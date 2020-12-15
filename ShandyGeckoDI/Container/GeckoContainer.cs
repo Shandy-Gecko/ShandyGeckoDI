@@ -81,7 +81,7 @@ namespace ShandyGecko.ShandyGeckoDI
 		public T BuildUpType<T>(params Parameter[] parameters)
 		{
 			var obj = BuildUpConstructorInternal<T>(parameters);
-			return BuildUpPropertiesInternal<T>(obj, parameters);
+			return PerformInternalBuildUps(obj, parameters);
 		}
 
 		/// <summary>
@@ -93,7 +93,7 @@ namespace ShandyGecko.ShandyGeckoDI
 		/// <returns></returns>
 		public T BuildUp<T>(T obj, params Parameter[] parameters)
 		{
-			return BuildUpPropertiesInternal<T>(obj, parameters);
+			return PerformInternalBuildUps(obj, parameters);
 		}
 		
 		public void Dispose()
@@ -103,11 +103,24 @@ namespace ShandyGecko.ShandyGeckoDI
 				containerRegistry.ObjectProvider.Dispose();
 			}
 		}
+
+		private T PerformInternalBuildUps<T>(T obj, params Parameter[] parameters)
+		{
+			obj = BuildUpMethodInternal(obj, parameters);
+			return BuildUpPropertiesInternal<T>(obj, parameters);
+		}
 		
 		private T BuildUpConstructorInternal<T>(params Parameter[] parameters)
 		{
+			//TODO проверка на GeckoBehaviour, в них недолжно быть конструкторов
 			var type = typeof(T);
 			return (T) BuildUpConstructorInternal(type, parameters);
+		}
+
+		private T BuildUpMethodInternal<T>(T obj, params Parameter[] parameters)
+		{
+			BuildUpMethodInternal(obj.GetType(), obj, parameters);
+			return obj;
 		}
 
 		private T BuildUpPropertiesInternal<T>(T obj, params Parameter[] parameters)
@@ -153,6 +166,7 @@ namespace ShandyGecko.ShandyGeckoDI
 				throw new ContainerException("There is more than 1 constructor with Dependency attribute!");
 			}
 
+			// First constructor with dependecy attribute
 			if (count != 0)
 			{
 				return ResolveConstructor(constructorsWithDepAttr.First(), parameters);
@@ -183,6 +197,37 @@ namespace ShandyGecko.ShandyGeckoDI
 			return constructors.FirstOrDefault(x => x.GetParameters().Length == minParamsCount);
 		}
 
+		private void BuildUpMethodInternal(Type type, object obj, params Parameter[] parameters)
+		{
+			if (!(type.BaseType is null) && type.BaseType.IsClass && type.BaseType != typeof(object))
+			{
+				BuildUpMethodInternal(type.BaseType, obj, parameters);	
+			}
+
+			var methods = type.GetMethods();
+			var methodsWithDepAttribute = GetMethodsWithDependencyAttribute(methods);
+
+			var methodCount = methodsWithDepAttribute.Count();
+			if (methodCount > 1)
+			{
+				throw new ContainerException("There is more than 1 method with Dependency attribute!");
+			}
+
+			if (methodCount == 0)
+			{
+				return;
+			}
+
+			ResolveMethod(obj, methodsWithDepAttribute.First(), parameters);
+		}
+		
+		private IEnumerable<MethodInfo> GetMethodsWithDependencyAttribute(IEnumerable<MethodInfo> methodInfos)
+		{
+			var dependencyAttrType = typeof(DependencyAttribute);
+			return methodInfos.Where(x =>
+				x.CustomAttributes.FirstOrDefault(attributeData => attributeData.AttributeType == dependencyAttrType) != null);
+		}
+
 		private void BuildUpPropertiesInternal(Type type, object obj, params Parameter[] parameters)
 		{
 			if (type.BaseType != typeof(object))
@@ -210,29 +255,44 @@ namespace ShandyGecko.ShandyGeckoDI
 		private object ResolveConstructor(ConstructorInfo constructorInfo, params Parameter[] parameters)
 		{
 			var constructorParams = constructorInfo.GetParameters();
-			var constructorObjects = new object[constructorParams.Length];
+			var constructorObjects = GetObjectsByParameterInfos(constructorParams, parameters);
 
-			for (var i = 0; i < constructorParams.Length; i++)
+			return constructorInfo.Invoke(constructorObjects);
+		}
+
+		private void ResolveMethod(object obj, MethodInfo methodInfo, params Parameter[] parameters)
+		{
+			var methodParams = methodInfo.GetParameters();
+			var methodObjects = GetObjectsByParameterInfos(methodParams, parameters);
+
+			methodInfo.Invoke(obj, methodObjects);
+		}
+
+		private object[] GetObjectsByParameterInfos(ParameterInfo[] parameterInfos, params Parameter[] parameters)
+		{
+			var objects = new object[parameterInfos.Length];
+
+			for (var i = 0; i < parameterInfos.Length; i++)
 			{
-				var constructorParam = constructorParams[i];
+				var parameterInfo = parameterInfos[i];
 
 				// Cначала параметер
-				if (TryGetParameter(parameters, constructorParam, out var registryParameter))
+				if (TryGetParameter(parameters, parameterInfo, out var registryParameter))
 				{
-					constructorObjects[i] = registryParameter.Object;
+					objects[i] = registryParameter.Object;
 					continue;	
 				}
 
-				if (TryGetObjectProvider(constructorParam, out var objectProvider))
+				if (TryGetObjectProvider(parameterInfo, out var objectProvider))
 				{
-					constructorObjects[i] = objectProvider.GetObject(this);
+					objects[i] = objectProvider.GetObject(this);
 					continue;
 				}
 				
-				throw new ContainerException($"Can't get parameter or object provider for constructor parameter {constructorParam}");
+				throw new ContainerException($"Can't get parameter or object provider for parameter {parameterInfo}");
 			}
-			
-			return constructorInfo.Invoke(constructorObjects);
+
+			return objects;
 		}
 		
 		private void ResolveDependencyAttribute(object obj, PropertyInfo propertyInfo, string name)
@@ -271,7 +331,6 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		private bool TryGetObjectProvider(ParameterInfo parameterInfo, out IObjectProvider objectProvider)
 		{
-
 			var allKeys = _containerRegistries.Keys.Where(x =>
 				x.Type == parameterInfo.ParameterType && string.Equals(x.Name, parameterInfo.Name,
 					StringComparison.InvariantCultureIgnoreCase));
