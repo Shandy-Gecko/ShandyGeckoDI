@@ -199,7 +199,7 @@ namespace ShandyGecko.ShandyGeckoDI
 				BuildUpMethodInternal(type.BaseType, obj, parameters);	
 			}
 
-			var methods = type.GetMethods();
+			var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 			var methodsWithDepAttribute = GetMethodsWithDependencyAttribute(methods);
 
 			var methodCount = methodsWithDepAttribute.Count();
