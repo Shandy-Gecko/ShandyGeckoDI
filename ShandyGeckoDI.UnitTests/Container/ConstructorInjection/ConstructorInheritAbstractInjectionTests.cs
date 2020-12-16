@@ -1,9 +1,9 @@
 using NUnit.Framework;
 using ShandyGecko.ShandyGeckoDI;
 
-namespace ShandyGeckoDI.UnitTests.Container
+namespace ShandyGeckoDI.UnitTests.Container.ConstructorInjection
 {
-	public class ConstructorInheritInjectionTests
+	public class ConstructorInheritAbstractInjectionTests
 	{
 		private class Test1
 		{

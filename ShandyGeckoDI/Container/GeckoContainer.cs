@@ -151,11 +151,6 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		private object BuildUpConstructorInternal(Type type, params Parameter[] parameters)
 		{
-			if (!(type.BaseType is null) && type.BaseType.IsClass && type.BaseType != typeof(object) && !type.BaseType.IsAbstract)
-			{
-				return BuildUpConstructorInternal(type.BaseType);	
-			}
-
 			var constructors = type.GetConstructors();
 
 			// Constructor with dependency attribute

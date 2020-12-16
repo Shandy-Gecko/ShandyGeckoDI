@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using ShandyGecko.ShandyGeckoDI;
 
-namespace ShandyGeckoDI.UnitTests.Container
+namespace ShandyGeckoDI.UnitTests.Container.MethodInjection
 {
 	public class MethodInjectionTests
 	{
