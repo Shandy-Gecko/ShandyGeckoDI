@@ -42,6 +42,7 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		public T Resolve<T>(string name = "", params Parameter[] parameters)
 		{
+			//TODO вытащить параметры, перейти от TryGetObjectProvider к TryGetContainerRegistry
 			var obj = Resolve(typeof(T), name, parameters);
 			return (T) obj;
 		}
@@ -407,6 +408,12 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		private IObjectProvider GetObjectProviderFromContainer(ContainerKey containerKey)
 		{
+			var containerRegistry = GetContainerRegistryFromContainer(containerKey);
+			return containerRegistry.ObjectProvider;
+		}
+
+		private ContainerRegistry GetContainerRegistryFromContainer(ContainerKey containerKey)
+		{
 			if (!_containerRegistries.ContainsKey(containerKey))
 			{
 				throw new ContainerException($"Key {containerKey} isn't registered!");
@@ -419,7 +426,7 @@ namespace ShandyGecko.ShandyGeckoDI
 				throw new ContainerException($"Key {containerKey} has null object provider");
 			}
 
-			return containerRegistry.ObjectProvider;
+			return containerRegistry;
 		}
 
 		private T TryGetAttribute<T>(PropertyInfo propertyInfo)

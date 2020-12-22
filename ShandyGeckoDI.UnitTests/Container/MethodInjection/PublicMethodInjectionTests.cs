@@ -3,7 +3,7 @@ using ShandyGecko.ShandyGeckoDI;
 
 namespace ShandyGeckoDI.UnitTests.Container.MethodInjection
 {
-	public class MethodInjectionTests
+	public class PublicMethodInjectionTests
 	{
 		private class Test1
 		{

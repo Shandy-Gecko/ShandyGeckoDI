@@ -50,7 +50,5 @@ namespace ShandyGeckoDI.UnitTests.Container.PropertyInjection
 			Assert.AreEqual(test1, testNamedDep.Test1);
 			Assert.AreEqual(test2, testNamedDep.Test2);
 		}
-		
-		//TODO дописать - нужно проверить инъекцию во все варианты доступности свойства
 	}
 }

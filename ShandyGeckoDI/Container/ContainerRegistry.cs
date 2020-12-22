@@ -14,6 +14,7 @@ namespace ShandyGecko.ShandyGeckoDI
 		public BaseContext Context { get; private set; }
 		public bool IsNonLazy { get; private set; }
 		public IObjectProvider ObjectProvider { get; }
+		public IEnumerable<Parameter> Parameters => _parameters;
 
 		public ContainerRegistry(IObjectProvider objectProvider, GeckoContainer geckoContainer, BaseContext context = null)
 		{
