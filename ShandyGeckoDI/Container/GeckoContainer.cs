@@ -42,19 +42,25 @@ namespace ShandyGecko.ShandyGeckoDI
 
 		public T Resolve<T>(string name = "", params Parameter[] parameters)
 		{
-			//TODO вытащить параметры, перейти от TryGetObjectProvider к TryGetContainerRegistry
 			var obj = Resolve(typeof(T), name, parameters);
 			return (T) obj;
 		}
 		
 		public object Resolve(Type type, string name = "", params Parameter[] parameters)
 		{
-			if (!TryGetObjectProvider(type, name, out var objectProvider))
+			if (!TryGetContainerRegistry(type, name, out var containerRegistry))
 			{
 				throw new ContainerException($"Can't get object for type {type} and name {name}");
 			}
 
-			return objectProvider.GetObject(this, parameters);
+			if (!TryGetObjectProvider(containerRegistry, out var objectProvider))
+			{
+				return null;
+			}
+
+			var allParameters = parameters.Concat(containerRegistry.Parameters).ToArray();
+
+			return objectProvider.GetObject(this, allParameters);
 		} 
 		
 		public T TryResolve<T>(string name = "", params Parameter[] parameters)
@@ -65,12 +71,19 @@ namespace ShandyGecko.ShandyGeckoDI
 		
 		public object TryResolve(Type type, string name = "", params Parameter[] parameters)
 		{
-			if (!TryGetObjectProvider(type, name, out var objectProvider))
+			if (!TryGetContainerRegistry(type, name, out var containerRegistry))
 			{
 				return null;
 			}
 
-			return objectProvider.GetObject(this, parameters);
+			if (!TryGetObjectProvider(containerRegistry, out var objectProvider))
+			{
+				return null;
+			}
+
+			var allParameters = parameters.Concat(containerRegistry.Parameters).ToArray();
+
+			return objectProvider.GetObject(this, allParameters);
 		} 
 
 		/// <summary>
@@ -279,13 +292,20 @@ namespace ShandyGecko.ShandyGeckoDI
 					continue;	
 				}
 
-				if (TryGetObjectProvider(parameterInfo, out var objectProvider))
+				if (!TryGetContainerRegistry(parameterInfo, out var containerRegistry))
+				{
+					throw new ContainerException(
+						$"Can't get parameter or object provider for parameter {parameterInfo}");	
+				}
+
+				if (TryGetObjectProvider(containerRegistry, out var objectProvider))
 				{
 					objects[i] = objectProvider.GetObject(this);
-					continue;
 				}
-				
-				throw new ContainerException($"Can't get parameter or object provider for parameter {parameterInfo}");
+				else
+				{
+					Log.Error(Tag, $"Can't get object provider for parameter {parameterInfo}");	
+				}
 			}
 
 			return objects;
@@ -293,7 +313,11 @@ namespace ShandyGecko.ShandyGeckoDI
 		
 		private void ResolveDependencyAttribute(object obj, PropertyInfo propertyInfo, string name)
 		{
-			var objProvider = GetObjectProviderFromContainer(propertyInfo.PropertyType, name);
+			var containerRegistry = GetContainerRegistry(propertyInfo.PropertyType, name);
+			if (!TryGetObjectProvider(containerRegistry, out var objProvider))
+			{
+				throw new ContainerException($"Can't get container registry for property {propertyInfo}");
+			}
 
 			var createdObj = objProvider.GetObject(this);
 			
@@ -325,7 +349,7 @@ namespace ShandyGecko.ShandyGeckoDI
 			setter.Invoke(obj, new[] {targetObj});
 		}
 
-		private bool TryGetObjectProvider(ParameterInfo parameterInfo, out IObjectProvider objectProvider)
+		private bool TryGetContainerRegistry(ParameterInfo parameterInfo, out ContainerRegistry containerRegistry)
 		{
 			var allKeys = _containerRegistries.Keys.Where(x =>
 				x.Type == parameterInfo.ParameterType && string.Equals(x.Name, parameterInfo.Name,
@@ -340,33 +364,21 @@ namespace ShandyGecko.ShandyGeckoDI
 			if (allKeys.Any())
 			{
 				var firstKey = allKeys.First();
-
-				objectProvider = GetObjectProviderFromContainer(firstKey);
+				containerRegistry = GetContainerRegistry(firstKey);
+				
 				return true;
 			}
 
 			if (IsKeyRegistered(parameterInfo.ParameterType))
 			{
-				objectProvider = GetObjectProviderFromContainer(parameterInfo.ParameterType, string.Empty);
+				containerRegistry = GetContainerRegistry(parameterInfo.ParameterType, string.Empty);
 				return true;
 			}
 
-			objectProvider = null;
+			containerRegistry = null;
 			return false;
 		}
 
-		private bool TryGetObjectProvider(Type type, string name, out IObjectProvider objectProvider)
-		{
-			if (IsKeyRegistered(type, name))
-			{
-				objectProvider = GetObjectProviderFromContainer(type, name);
-				return true;
-			}
-
-			objectProvider = null;
-			return false;
-		}
-		
 		private bool TryGetParameter(IEnumerable<Parameter> parameters, ParameterInfo parameterInfo, out Parameter parameter)
 		{
 			//TODO Тонкое место - что мы делаем с именами вида Test1 и test1
@@ -399,20 +411,46 @@ namespace ShandyGecko.ShandyGeckoDI
 			parameter = null;
 			return false;
 		}
+
+		private bool TryGetObjectProvider(ContainerRegistry containerRegistry, out IObjectProvider objectProvider)
+		{
+			if (containerRegistry == null)
+			{
+				Log.Error(Tag, "ContainerRegistry is null!");
+				objectProvider = null;
+				return false;
+			}
+
+			if (containerRegistry.ObjectProvider == null)
+			{
+				Log.Error(Tag, "ObjectProvider is null!");
+				objectProvider = null;
+				return false;
+			}
+
+			objectProvider = containerRegistry.ObjectProvider;
+			return true;
+		}
+
+		private bool TryGetContainerRegistry(Type type, string name, out ContainerRegistry containerRegistry)
+		{
+			if (IsKeyRegistered(type, name))
+			{
+				containerRegistry = GetContainerRegistry(type, name);
+				return true;
+			}
+
+			containerRegistry = null;
+			return false;
+		}
 		
-		private IObjectProvider GetObjectProviderFromContainer(Type type, string name)
+		private ContainerRegistry GetContainerRegistry(Type type, string name)
 		{
 			var containerKey = new ContainerKey(type, name);
-			return GetObjectProviderFromContainer(containerKey);
+			return GetContainerRegistry(containerKey);
 		}
 
-		private IObjectProvider GetObjectProviderFromContainer(ContainerKey containerKey)
-		{
-			var containerRegistry = GetContainerRegistryFromContainer(containerKey);
-			return containerRegistry.ObjectProvider;
-		}
-
-		private ContainerRegistry GetContainerRegistryFromContainer(ContainerKey containerKey)
+		private ContainerRegistry GetContainerRegistry(ContainerKey containerKey)
 		{
 			if (!_containerRegistries.ContainsKey(containerKey))
 			{
