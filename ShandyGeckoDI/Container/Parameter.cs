@@ -15,7 +15,7 @@ namespace ShandyGecko.ShandyGeckoDI
 			Name = name;
 		}
 
-		public Parameter(object obj, Type type, string name)
+		public Parameter(object obj, Type type, string name = "")
 		{
 			Object = obj;
 			Type = type;

@@ -3,7 +3,7 @@ using ShandyGecko.ShandyGeckoDI;
 
 namespace ShandyGeckoDI.UnitTests.Container.ContainerRegistry
 {
-	public class ContainerRegistryParametersTests
+	public class ContainerRegistryPrimitiveParametersTests
 	{
 		private const string Parameter1 = "Test1";
 		private const int Parameter2 = 9000;
