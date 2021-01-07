@@ -55,7 +55,7 @@ namespace ShandyGecko.ShandyGeckoDI
 
 			if (!TryGetObjectProvider(containerRegistry, out var objectProvider))
 			{
-				return null;
+				throw new ContainerException($"Can't get objectProvider for type {type} and name {name}");
 			}
 
 			var allParameters = parameters.Concat(containerRegistry.Parameters).ToArray();
@@ -292,6 +292,7 @@ namespace ShandyGecko.ShandyGeckoDI
 					continue;	
 				}
 
+				//TODO Это особый Resolve 
 				if (!TryGetContainerRegistry(parameterInfo, out var containerRegistry))
 				{
 					throw new ContainerException(
@@ -313,21 +314,15 @@ namespace ShandyGecko.ShandyGeckoDI
 		
 		private void ResolveDependencyAttribute(object obj, PropertyInfo propertyInfo, string name)
 		{
-			var containerRegistry = GetContainerRegistry(propertyInfo.PropertyType, name);
-			if (!TryGetObjectProvider(containerRegistry, out var objProvider))
-			{
-				throw new ContainerException($"Can't get container registry for property {propertyInfo}");
-			}
+			var resolvedObj = Resolve(propertyInfo.PropertyType, name);
 
-			var createdObj = objProvider.GetObject(this);
-			
 			var setter = propertyInfo.GetSetMethod(true);
 			if (setter == null)
 			{
 				throw new ContainerException($"Property {propertyInfo} has null setter");
 			}
 			
-			setter.Invoke(obj, new[] {createdObj});
+			setter.Invoke(obj, new[] {resolvedObj});
 		}
 		
 		private void ResolveParameterAttribute(object obj, PropertyInfo propertyInfo, string name, IEnumerable<Parameter> parameters)
