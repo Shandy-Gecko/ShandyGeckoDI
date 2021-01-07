@@ -5,8 +5,9 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 	{
 		private Context _context;
 
-		protected Context Context => _context ?? (_context = new Context());
+		protected Context Context => _context ?? (_context = new Context(LifeTime));
 		protected abstract GeckoContainer Container { get; }
+		protected abstract int LifeTime { get; }
 
 		protected abstract void RegisterTypes(GeckoContainer container, Context context);
 		

@@ -3,16 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ShandyGecko.LogSystem;
+using ShandyGecko.ShandyGeckoDI.LifeTimeProvider;
 
 namespace ShandyGecko.ShandyGeckoDI
 {
 	public class GeckoContainer : IDisposable
 	{
 		[LogFilter] public const string Tag = "GeckoContainer";
-		
+
+		private ILifeTimeProvider _lifeTimeProvider;
+
+		private readonly LifeTimeChecker _lifeTimeChecker;
 		private readonly Dictionary<ContainerKey, ContainerRegistry> _containerRegistries =
 			new Dictionary<ContainerKey, ContainerRegistry>();
 
+		public ILifeTimeProvider LifeTimeProvider
+		{
+			get => _lifeTimeProvider;
+			set => _lifeTimeProvider = value;
+		}
+
+		public ILifeTimeCheckerReactions LifeTimeCheckerReactions => _lifeTimeChecker;
+
+		public GeckoContainer()
+		{
+			_lifeTimeProvider = new DefaultLifeTimeProvider();
+			_lifeTimeChecker = new LifeTimeChecker();
+		}
+		
 		public ContainerRegistry RegisterProvider<T>(IObjectProvider provider, BaseContext context = null)
 		{
 			var key = new ContainerKey(typeof(T));
@@ -53,14 +71,7 @@ namespace ShandyGecko.ShandyGeckoDI
 				throw new ContainerException($"Can't get object for type {type} and name {name}");
 			}
 
-			if (!TryGetObjectProvider(containerRegistry, out var objectProvider))
-			{
-				throw new ContainerException($"Can't get objectProvider for type {type} and name {name}");
-			}
-
-			var allParameters = parameters.Concat(containerRegistry.Parameters).ToArray();
-
-			return objectProvider.GetObject(this, allParameters);
+			return CheckAndCreateObject(containerRegistry, parameters);
 		} 
 		
 		public T TryResolve<T>(string name = "", params Parameter[] parameters)
@@ -76,14 +87,7 @@ namespace ShandyGecko.ShandyGeckoDI
 				return null;
 			}
 
-			if (!TryGetObjectProvider(containerRegistry, out var objectProvider))
-			{
-				return null;
-			}
-
-			var allParameters = parameters.Concat(containerRegistry.Parameters).ToArray();
-
-			return objectProvider.GetObject(this, allParameters);
+			return CheckAndCreateObject(containerRegistry, parameters);
 		} 
 
 		/// <summary>
@@ -116,6 +120,33 @@ namespace ShandyGecko.ShandyGeckoDI
 			{
 				containerRegistry.ObjectProvider.Dispose();
 			}
+		}
+
+		private object Resolve(ParameterInfo parameterInfo)
+		{
+			if (!TryGetContainerRegistry(parameterInfo, out var containerRegistry))
+			{
+				throw new ContainerException(
+					$"Can't get parameter or object provider for parameter {parameterInfo}");	
+			}
+
+			return CheckAndCreateObject(containerRegistry);
+		}
+
+		private object CheckAndCreateObject(ContainerRegistry containerRegistry, params Parameter[] parameters)
+		{
+			if (!TryGetObjectProvider(containerRegistry, out var objectProvider))
+			{
+				throw new ContainerException($"Can't get objectProvider in ContainerRegistry {containerRegistry}");
+			}
+			
+			var allParameters = parameters.Concat(containerRegistry.Parameters).ToArray();
+			
+			_lifeTimeChecker.Push(containerRegistry);
+			var obj = objectProvider.GetObject(this, allParameters);
+			_lifeTimeChecker.Pop();
+			
+			return obj;
 		}
 
 		private T PerformInternalBuildUps<T>(T obj, params Parameter[] parameters)
@@ -292,21 +323,7 @@ namespace ShandyGecko.ShandyGeckoDI
 					continue;	
 				}
 
-				//TODO Это особый Resolve 
-				if (!TryGetContainerRegistry(parameterInfo, out var containerRegistry))
-				{
-					throw new ContainerException(
-						$"Can't get parameter or object provider for parameter {parameterInfo}");	
-				}
-
-				if (TryGetObjectProvider(containerRegistry, out var objectProvider))
-				{
-					objects[i] = objectProvider.GetObject(this);
-				}
-				else
-				{
-					Log.Error(Tag, $"Can't get object provider for parameter {parameterInfo}");	
-				}
+				objects[i] = Resolve(parameterInfo);
 			}
 
 			return objects;

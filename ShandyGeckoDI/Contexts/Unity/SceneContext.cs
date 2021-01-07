@@ -16,6 +16,7 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 		private string _sceneName;
 
 		protected override GeckoContainer Container => UnityContainerProvider.Instance.RootContainer;
+		protected override int LifeTime => Container.LifeTimeProvider.SceneLifeTime;
 
 		protected override void Awake()
 		{

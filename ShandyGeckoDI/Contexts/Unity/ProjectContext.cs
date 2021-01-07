@@ -17,7 +17,8 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 		protected abstract string ProjectName { get; }
 
 		protected override GeckoContainer Container => _geckoContainer ?? (_geckoContainer = new GeckoContainer());
-
+		protected override int LifeTime => Container.LifeTimeProvider.ProjectLifeTime;
+		
 		protected override void Awake()
 		{
 			DontDestroyOnLoad(gameObject);

@@ -23,5 +23,7 @@ namespace ShandyGecko.ShandyGeckoDI
 		{
 			_containerRegistries.Add(registry);
 		}
+
+		public abstract int Lifetime { get; }
 	}
 }

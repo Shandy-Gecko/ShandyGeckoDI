@@ -12,7 +12,7 @@ namespace ShandyGeckoDI.UnitTests.Context
 		[Test]
 		public void SetContextOnRegistryTest()
 		{
-			var container = new ShandyGecko.ShandyGeckoDI.GeckoContainer();
+			var container = new GeckoContainer();
 			var context = new ShandyGecko.ShandyGeckoDI.Context();
 
 			container.RegisterInstance(new TestClass(), context);
