@@ -9,7 +9,7 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 	/// Контекст, который уничтожается при смене сцены
 	/// </summary>
 	[RequireComponent(typeof(GameObject))]
-	public abstract class SceneContext : UnityContext
+	public abstract class SceneContext : BaseUnityContext
 	{
 		[LogFilter] public const string Tag = "SceneContext";
 		

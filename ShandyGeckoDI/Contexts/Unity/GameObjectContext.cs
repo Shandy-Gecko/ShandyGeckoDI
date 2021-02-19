@@ -8,7 +8,7 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 	/// Контекст, который уничтожается при уничтожении объекта
 	/// </summary>
 	[RequireComponent(typeof(Object))]
-	public abstract class GameObjectContext : UnityContext
+	public abstract class GameObjectContext : BaseUnityContext
 	{
 		[LogFilter] public const string Tag = "GameObjectContext";
 		

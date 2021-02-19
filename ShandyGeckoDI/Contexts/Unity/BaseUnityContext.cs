@@ -1,7 +1,7 @@
 #if UNITY_5_3_OR_NEWER
 namespace ShandyGecko.ShandyGeckoDI.Unity
 {
-	public abstract class UnityContext : GeckoBehaviour
+	public abstract class BaseUnityContext : GeckoBehaviour
 	{
 		private Context _context;
 

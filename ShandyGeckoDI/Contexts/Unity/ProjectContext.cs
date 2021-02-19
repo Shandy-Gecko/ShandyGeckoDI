@@ -8,9 +8,9 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 	/// Контекст, который уничтожается при выключении игры
 	/// </summary>
 	[RequireComponent(typeof(GameObject))]
-	public abstract class ProjectContext : UnityContext
+	public abstract class ProjectContext : BaseUnityContext
 	{
-		[LogFilter] public string Tag = "ProjectContext";
+		[LogFilter] public const string Tag = "ProjectContext";
 
 		private GeckoContainer _geckoContainer;
 		
@@ -24,6 +24,7 @@ namespace ShandyGecko.ShandyGeckoDI.Unity
 			DontDestroyOnLoad(gameObject);
 			
 			Log.Info(Tag, $"Adding context to project {ProjectName}");
+			//TODO проврка на то, что контейнер уже существует
 			UnityContainerProvider.Instance.SetContainer(Container);
 			
 			RegisterTypes(Container, Context);	
